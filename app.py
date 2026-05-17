@@ -50,9 +50,24 @@ Instrumentator().instrument(app).expose(app)
 from fastapi.templating import Jinja2Templates
 templates = Jinja2Templates(directory="./templates")
 
-@app.get("/", tags=["authentication"])
-async def index():
-    return RedirectResponse(url="/docs")
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# Serves React production client if built, otherwise redirects to Swagger docs
+if os.path.exists("frontend/dist"):
+    app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
+    
+    @app.get("/favicon.png", include_in_schema=False)
+    async def favicon():
+        return FileResponse("frontend/dist/favicon.png")
+        
+    @app.get("/", include_in_schema=False)
+    async def index():
+        return FileResponse("frontend/dist/index.html")
+else:
+    @app.get("/", tags=["authentication"])
+    async def index():
+        return RedirectResponse(url="/docs")
 
 @app.get("/train")
 async def train_route():

@@ -46,7 +46,11 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [apiEndpoint, setApiEndpoint] = useState('http://localhost:8000/predict');
+  const [apiEndpoint, setApiEndpoint] = useState(
+    window.location.origin === 'http://localhost:5173' 
+      ? 'http://localhost:8000/predict' 
+      : window.location.origin + '/predict'
+  );
   const [inputUrl, setInputUrl] = useState('https://www.chase.com/personal/banking');
   const [parseMessage, setParseMessage] = useState('');
 
