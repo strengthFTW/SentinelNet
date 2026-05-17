@@ -95,6 +95,10 @@ function App() {
   const [activeTab, setActiveTab] = useState('predict');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [apiEndpoint, setApiEndpoint] = useState('http://localhost:8000/predict');
+  
+  // Real-world URL parser states
+  const [inputUrl, setInputUrl] = useState('https://www.chase.com/personal/banking');
+  const [parseMessage, setParseMessage] = useState('');
 
   // Quick feature updater
   const updateFeature = (key, value) => {
@@ -104,9 +108,88 @@ function App() {
     }));
   };
 
+  // Real-world URL feature extraction logic
+  const parseRealUrl = () => {
+    if (!inputUrl) {
+      setError("Please enter a valid website URL first.");
+      return;
+    }
+    
+    try {
+      let cleanUrl = inputUrl.trim();
+      if (!/^https?:\/\//i.test(cleanUrl)) {
+        cleanUrl = 'http://' + cleanUrl;
+      }
+      
+      const parsed = new URL(cleanUrl);
+      const hostname = parsed.hostname;
+      const urlString = parsed.href;
+      
+      // 1. IP Address
+      const isIP = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname);
+      
+      // 2. URL Length (Phishing usually > 54 chars)
+      const isSuspiciousLength = urlString.length > 54;
+      
+      // 3. Shortening Services
+      const isShort = /bit\.ly|tinyurl|t\.co|goo\.gl|rebrand\.ly|tiny\.cc|is\.gd|cli\.gs|yfrog\.com|migre\.me|ff\.im|tiny\.one/.test(hostname);
+      
+      // 4. @ symbol
+      const hasAt = urlString.includes('@');
+      
+      // 5. Double Slash Redirecting (beyond the protocol)
+      const hasDoubleSlash = urlString.lastIndexOf('//') > 7;
+      
+      // 6. Prefix-Suffix (Hyphen in domain)
+      const hasHyphen = hostname.includes('-');
+      
+      // 7. Subdomains (checks number of dot separations)
+      const dots = hostname.split('.').filter(Boolean).length;
+      let subdomainValue = 0; // Neutral
+      if (dots > 3) {
+        subdomainValue = -1; // Malicious (Too many subdomains)
+      } else if (dots <= 2) {
+        subdomainValue = 1; // Safe
+      }
+      
+      // 8. SSL Final State (HTTPS vs HTTP)
+      const isHttps = urlString.startsWith('https');
+
+      // Populate features state!
+      setFeatures(prev => ({
+        ...prev,
+        having_IP_Address: isIP ? -1 : 1,
+        URL_Length: isSuspiciousLength ? -1 : 1,
+        Shortining_Service: isShort ? -1 : 1,
+        having_At_Symbol: hasAt ? -1 : 1,
+        double_slash_redirecting: hasDoubleSlash ? -1 : 1,
+        Prefix_Suffix: hasHyphen ? -1 : 1,
+        having_Sub_Domain: subdomainValue,
+        SSLfinal_State: isHttps ? 1 : -1,
+      }));
+      
+      setParseMessage(`✅ URL Analyzed! Extracted 8 core features: SSL (${isHttps ? 'HTTPS' : 'HTTP'}), Hyphens (${hasHyphen ? 'Yes' : 'No'}), Length (${urlString.length} chars). Selectors have been auto-configured below!`);
+      setError(null);
+      
+      // Flash confetti for successful parse
+      confetti({
+        particleCount: 30,
+        spread: 40,
+        origin: { y: 0.8 }
+      });
+      
+    } catch (err) {
+      console.error(err);
+      setError(`Failed to parse URL: ${err.message}. Please enter a valid format, e.g., google.com or http://phish-login.net`);
+      setParseMessage('');
+    }
+  };
+
   // Set preset templates for testing
   const applyPreset = (type) => {
     if (type === 'safe') {
+      setInputUrl('https://www.chase.com/personal/banking');
+      setParseMessage('');
       setFeatures({
         ...DEFAULT_FEATURES,
         SSLfinal_State: 1,
@@ -116,6 +199,8 @@ function App() {
         web_traffic: 1,
       });
     } else {
+      setInputUrl('http://secure-chase-update-login-verification.temp-host.net');
+      setParseMessage('');
       setFeatures({
         ...DEFAULT_FEATURES,
         SSLfinal_State: -1,
@@ -265,6 +350,35 @@ function App() {
                   </button>
                 </div>
               </div>
+
+              {/* REAL-WORLD INTERACTIVE URL PARSER */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(139, 92, 246, 0.04)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+                <label style={{ display: 'block', fontSize: '13px', color: '#c084fc', fontWeight: '700', letterSpacing: '0.5px' }}>
+                  ⚡ TEST ANY REAL-WORLD WEBSITE URL (FEATURE EXTRACTOR)
+                </label>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <input 
+                    type="text" 
+                    value={inputUrl}
+                    onChange={(e) => setInputUrl(e.target.value)}
+                    placeholder="Paste website address here, e.g., http://my-secure-bank-login.com/login.html"
+                    style={{ flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '8px', color: '#f3f4f6', padding: '10px 16px', fontSize: '14px', boxSizing: 'border-box' }}
+                  />
+                  <button 
+                    type="button"
+                    onClick={parseRealUrl}
+                    style={{ background: 'linear-gradient(to right, #8b5cf6, #3b82f6)', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px rgba(139, 92, 246, 0.2)' }}
+                  >
+                    Extract website Features
+                  </button>
+                </div>
+                {parseMessage && (
+                  <div style={{ color: '#10b981', fontSize: '13px', fontWeight: '600', marginTop: '4px' }}>
+                    {parseMessage}
+                  </div>
+                )}
+              </div>
+
 
               {/* Form Grid */}
               <form onSubmit={handlePredict}>
