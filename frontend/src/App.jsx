@@ -186,15 +186,7 @@ function App() {
           <h2 className="michroma" style={{ color: 'var(--purple-neon)', fontSize: '20px', margin: '0 0 20px 0', letterSpacing: '1px' }}>
             SENTINEL
           </h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid var(--border-color)', padding: '8px', background: 'var(--bg-color)' }}>
-            <div style={{ width: '36px', height: '36px', background: 'var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ShieldCheck size={20} color="var(--green-neon)" />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: '#fff' }}>OPERATOR_01</span>
-              <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>[ACCESS_LVL: 05]</span>
-            </div>
-          </div>
+
         </div>
 
         <nav style={{ flex: 1, padding: '20px 0' }}>
@@ -220,18 +212,7 @@ function App() {
           ))}
         </nav>
 
-        <div style={{ padding: '20px', borderTop: '1px solid var(--border-color)' }}>
-          <button style={{ 
-            width: '100%', background: 'var(--purple-neon)', color: '#000', border: 'none', 
-            padding: '12px', fontWeight: '800', fontSize: '12px', letterSpacing: '2px', marginBottom: '20px'
-          }}>
-            INIT_SCAN
-          </button>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '11px', color: 'var(--text-muted)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><Settings size={14} /> SETTINGS</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><LogOut size={14} /> LOGOUT</div>
-          </div>
-        </div>
+
       </div>
 
       {/* MAIN CONTENT AREA */}
@@ -242,12 +223,7 @@ function App() {
           <h1 className="michroma" style={{ margin: 0, color: 'var(--purple-neon)', letterSpacing: '4px', fontStyle: 'italic', fontSize: '24px' }}>
             SENTINEL_NET // V.01
           </h1>
-          <div style={{ display: 'flex', gap: '20px', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', alignItems: 'center' }}>
-            <span style={{ cursor: 'pointer', color: '#fff', borderBottom: '2px solid var(--purple-neon)', paddingBottom: '4px' }}>OVERVIEW</span>
-            <span style={{ cursor: 'pointer' }}>EXTRACTOR</span>
-            <span style={{ cursor: 'pointer' }}>MODELS</span>
-            <Search size={16} style={{ marginLeft: '10px', cursor: 'pointer' }} />
-          </div>
+
         </header>
 
         {/* TAB CONTENT */}
@@ -307,18 +283,7 @@ function App() {
                     ))}
                   </div>
 
-                  {/* HEARTBEAT */}
-                  <div style={{ marginTop: '30px', borderTop: '1px dashed var(--border-color)', paddingTop: '20px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: 'var(--text-muted)', marginBottom: '10px' }}>
-                      <span>SYSTEM_HEARTBEAT</span>
-                      <span>Uptime: 99.999%</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', height: '40px', gap: '4px' }}>
-                      {[40, 60, 30, 80, 50, 40, 70, 50, 80, 60, 40, 90, 70].map((h, i) => (
-                        <div key={i} style={{ flex: 1, background: 'var(--green-neon)', height: `${h}%`, opacity: 0.8 }}></div>
-                      ))}
-                    </div>
-                  </div>
+
                 </div>
               </div>
 
