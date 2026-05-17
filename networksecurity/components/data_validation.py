@@ -37,34 +37,54 @@ class DataValidation:
         except Exception as e:
             raise NetworkSecurityException(e,sys)
         
-    def detect_dataset_drift(self,base_df,current_df,threshold=0.05)->bool:
+    def detect_dataset_drift(self, base_df, current_df, threshold=0.05)->bool:
         try:
-            status=True
-            report={}
-            for column in base_df.columns:
-                d1=base_df[column]
-                d2=current_df[column]
-                is_same_dist=ks_2samp(d1,d2)
-                if threshold<=is_same_dist.pvalue:
-                    is_found=False
-                else:
-                    is_found=True
-                    status=False
-                report.update({column:{
-                    "p_value":float(is_same_dist.pvalue),
-                    "drift_status":is_found
-                    
-                    }})
-            drift_report_file_path = self.data_validation_config.drift_report_file_path
+            status = True
+            
+            # Integrate Evidently AI legacy module for reliable dict serialization
+            from evidently.legacy.report import Report
+            from evidently.legacy.metrics import DataDriftTable
+            import json
 
-            #Create directory
+            logging.info("Starting Evidently AI Data Drift report generation...")
+            drift_report = Report(metrics=[DataDriftTable()])
+            drift_report.run(reference_data=base_df, current_data=current_df)
+            
+            # Extract drift status from Evidently report results
+            report_dict = drift_report.as_dict()
+            
+            # Check if dataset drift is detected overall
+            dataset_drift_detected = report_dict["metrics"][0]["result"]["dataset_drift"]
+            if dataset_drift_detected:
+                status = False
+                logging.warning("Data drift detected between reference and current dataset!")
+            else:
+                logging.info("No significant data drift detected.")
+
+            # Construct our own structured report to save
+            report = {}
+            for col, col_result in report_dict["metrics"][0]["result"]["drift_by_columns"].items():
+                report[col] = {
+                    "p_value": float(col_result["drift_score"]),
+                    "drift_status": bool(col_result["drift_detected"])
+                }
+
+            drift_report_file_path = self.data_validation_config.drift_report_file_path
             dir_path = os.path.dirname(drift_report_file_path)
-            os.makedirs(dir_path,exist_ok=True)
-            write_yaml_file(file_path=drift_report_file_path,content=report)
+            os.makedirs(dir_path, exist_ok=True)
+            
+            # Save standard yaml report (keeps training pipeline fully functional!)
+            write_yaml_file(file_path=drift_report_file_path, content=report)
+            
+            # Save beautiful evidently interactive HTML report for recruitment showcase!
+            html_report_path = os.path.join(dir_path, "evidently_drift_report.html")
+            drift_report.save_html(html_report_path)
+            logging.info(f"Evidently AI interactive drift report saved to: {html_report_path}")
+
             return status
 
         except Exception as e:
-            raise NetworkSecurityException(e,sys)
+            raise NetworkSecurityException(e, sys)
         
     
     def initiate_data_validation(self)->DataValidationArtifact:
