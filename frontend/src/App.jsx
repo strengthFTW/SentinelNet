@@ -1,59 +1,12 @@
 import React, { useState } from 'react';
 import { 
-  ShieldAlert, 
-  ShieldCheck, 
-  Terminal, 
-  GitBranch, 
-  Settings, 
-  Activity, 
-  Database, 
-  Workflow, 
-  CheckCircle2, 
-  AlertTriangle,
-  Play,
-  FileSpreadsheet,
-  Network,
-  Cpu,
-  Layers,
-  Search,
-  ExternalLink
+  ShieldCheck, AlertTriangle, ShieldAlert, Play, Cpu, 
+  Workflow, Network, Settings, LogOut, Search, Activity, Database, Terminal, FileSpreadsheet, Layers, GitBranch, CheckCircle2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import './index.css';
 
-// Core 30 Features of SentinelNet
-const FEATURE_LABELS = {
-  having_IP_Address: "IP Address in URL",
-  URL_Length: "URL Length",
-  Shortining_Service: "URL Shortening Service",
-  having_At_Symbol: "At Symbol (@)",
-  double_slash_redirecting: "Double Slash Redirect (//)",
-  Prefix_Suffix: "Prefix/Suffix in Domain (-)",
-  having_Sub_Domain: "Sub-Domain Presence",
-  SSLfinal_State: "SSL Final State (HTTPS)",
-  Domain_registeration_length: "Domain Registration Length",
-  Favicon: "Favicon Loaded Ext",
-  port: "Non-standard Port",
-  HTTPS_token: "HTTPS Token in URL",
-  Request_URL: "Request URL Source",
-  URL_of_Anchor: "Anchor URL Source",
-  Links_in_tags: "Links in Meta Tags",
-  SFH: "Server Form Handler (SFH)",
-  Submitting_to_email: "Submit to Email",
-  Abnormal_URL: "Abnormal URL Structure",
-  Redirect: "Redirect Count",
-  on_mouseover: "On Mouseover Status Alert",
-  RightClick: "Right Click Disabled",
-  popUpWidnow: "Pop-up Window Status",
-  Iframe: "Iframe Redirection",
-  age_of_domain: "Age of Domain",
-  DNSRecord: "DNS Record Status",
-  web_traffic: "Web Traffic Rank",
-  Page_Rank: "Page Rank Value",
-  Google_Index: "Google Search Indexed",
-  Links_pointing_to_page: "Links Pointing to Page",
-  Statistical_report: "Statistical Report Presence"
-};
-
+// Core 30 Features mapping required by the backend pipeline
 const DEFAULT_FEATURES = {
   having_IP_Address: 1,
   URL_Length: 1,
@@ -73,7 +26,7 @@ const DEFAULT_FEATURES = {
   SFH: 1,
   Submitting_to_email: 1,
   Abnormal_URL: 1,
-  Redirect: 0,
+  Redirect: 1,
   on_mouseover: 1,
   RightClick: 1,
   popUpWidnow: 1,
@@ -87,75 +40,54 @@ const DEFAULT_FEATURES = {
   Statistical_report: 1
 };
 
-
 function App() {
   const [features, setFeatures] = useState({ ...DEFAULT_FEATURES });
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [apiEndpoint, setApiEndpoint] = useState('http://localhost:8000/predict');
-  
-  // Real-world URL parser states
   const [inputUrl, setInputUrl] = useState('https://www.chase.com/personal/banking');
   const [parseMessage, setParseMessage] = useState('');
 
-  // Quick feature updater
   const updateFeature = (key, value) => {
     setFeatures(prev => ({
       ...prev,
-      [key]: parseInt(value)
+      [key]: parseInt(value, 10)
     }));
   };
 
-  // Real-world URL feature extraction logic
-  const parseRealUrl = () => {
-    if (!inputUrl) {
-      setError("Please enter a valid website URL first.");
-      return;
-    }
-    
+  const parseRealUrl = (e) => {
+    e.preventDefault();
     try {
-      let cleanUrl = inputUrl.trim();
-      if (!/^https?:\/\//i.test(cleanUrl)) {
-        cleanUrl = 'http://' + cleanUrl;
-      }
-      
-      const parsed = new URL(cleanUrl);
-      const hostname = parsed.hostname;
-      const urlString = parsed.href;
-      
-      // 1. IP Address
-      const isIP = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname);
-      
-      // 2. URL Length (Phishing usually > 54 chars)
+      const urlString = inputUrl.trim();
+      if (!urlString) throw new Error("URL cannot be empty");
+
+      const isIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(urlString) || urlString.includes('0x');
       const isSuspiciousLength = urlString.length > 54;
-      
-      // 3. Shortening Services
-      const isShort = /bit\.ly|tinyurl|t\.co|goo\.gl|rebrand\.ly|tiny\.cc|is\.gd|cli\.gs|yfrog\.com|migre\.me|ff\.im|tiny\.one/.test(hostname);
-      
-      // 4. @ symbol
+      const isShort = urlString.includes('bit.ly') || urlString.includes('t.co') || urlString.includes('tinyurl');
       const hasAt = urlString.includes('@');
-      
-      // 5. Double Slash Redirecting (beyond the protocol)
       const hasDoubleSlash = urlString.lastIndexOf('//') > 7;
-      
-      // 6. Prefix-Suffix (Hyphen in domain)
-      const hasHyphen = hostname.includes('-');
-      
-      // 7. Subdomains (checks number of dot separations)
-      const dots = hostname.split('.').filter(Boolean).length;
-      let subdomainValue = 0; // Neutral
-      if (dots > 3) {
-        subdomainValue = -1; // Malicious (Too many subdomains)
-      } else if (dots <= 2) {
-        subdomainValue = 1; // Safe
+      const hasHyphen = urlString.includes('-');
+
+      let domain = urlString;
+      try {
+        if (!urlString.startsWith('http')) {
+          domain = new URL('http://' + urlString).hostname;
+        } else {
+          domain = new URL(urlString).hostname;
+        }
+      } catch (e) {
+        domain = urlString.split('/')[0];
       }
+
+      const dots = (domain.match(/\./g) || []).length;
+      let subdomainValue = 0; 
+      if (dots > 3) subdomainValue = -1;
+      else if (dots <= 2) subdomainValue = 1;
       
-      // 8. SSL Final State (HTTPS vs HTTP)
       const isHttps = urlString.startsWith('https');
 
-      // Populate features state!
       setFeatures(prev => ({
         ...prev,
         having_IP_Address: isIP ? -1 : 1,
@@ -168,331 +100,320 @@ function App() {
         SSLfinal_State: isHttps ? 1 : -1,
       }));
       
-      setParseMessage(`✅ URL Analyzed! Extracted 8 core features: SSL (${isHttps ? 'HTTPS' : 'HTTP'}), Hyphens (${hasHyphen ? 'Yes' : 'No'}), Length (${urlString.length} chars). Selectors have been auto-configured below!`);
+      setParseMessage(`[SYS_MSG] URL Extracted: SSL (${isHttps ? 'HTTPS' : 'HTTP'}), Hyphens (${hasHyphen ? 'Yes' : 'No'}), Len (${urlString.length})`);
       setError(null);
-      
-      // Flash confetti for successful parse
-      confetti({
-        particleCount: 30,
-        spread: 40,
-        origin: { y: 0.8 }
-      });
-      
     } catch (err) {
       console.error(err);
-      setError(`Failed to parse URL: ${err.message}. Please enter a valid format, e.g., google.com or http://phish-login.net`);
+      setError(`[ERR_PARSE] ${err.message}`);
       setParseMessage('');
     }
   };
 
-  // Set preset templates for testing
   const applyPreset = (type) => {
     if (type === 'safe') {
       setInputUrl('https://www.chase.com/personal/banking');
       setParseMessage('');
       setFeatures({
         ...DEFAULT_FEATURES,
-        SSLfinal_State: 1,
-        Prefix_Suffix: 1,
-        URL_of_Anchor: 1,
-        having_Sub_Domain: -1,
-        web_traffic: 1,
+        SSLfinal_State: 1, Prefix_Suffix: 1, URL_of_Anchor: 1, having_Sub_Domain: -1, web_traffic: 1,
       });
     } else {
       setInputUrl('http://secure-chase-update-login-verification.temp-host.net');
       setParseMessage('');
       setFeatures({
         ...DEFAULT_FEATURES,
-        SSLfinal_State: -1,
-        Prefix_Suffix: -1,
-        URL_of_Anchor: -1,
-        having_Sub_Domain: 1,
-        web_traffic: -1,
+        SSLfinal_State: -1, Prefix_Suffix: -1, URL_of_Anchor: -1, having_Sub_Domain: 1, web_traffic: -1,
       });
     }
   };
 
-  // Perform prediction POST request to FastAPI server
-  const handlePredict = async (e) => {
-    e.preventDefault();
+  const handlePredict = async () => {
     setLoading(true);
     setError(null);
     setPrediction(null);
-
     try {
-      // Map React state values into standard model parameters payload
       const response = await fetch(apiEndpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(features),
       });
-
-      if (!response.ok) {
-        throw new Error(`Server returned code ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`Server returned code ${response.status}`);
       const data = await response.json();
       
-      // Assume output is standard { 'prediction': [0] } or { 'result': 1 } or similar based on backend model trainer
-      // SentinelNet prediction output value: 1 = Phishing, 0 or -1 = Safe
       const val = data.prediction !== undefined ? data.prediction[0] : data.result;
       const isPhishing = val === -1 || val === 0;
 
+      setPrediction({ isPhishing, rawResult: data });
 
-
-      setPrediction({
-        isPhishing,
-        rawResult: data
-      });
-
-      // Confetti burst on safe prediction!
       if (!isPhishing) {
         confetti({
-          particleCount: 100,
-          spread: 70,
+          particleCount: 80,
+          spread: 60,
           origin: { y: 0.6 },
-          colors: ['#10b981', '#3b82f6', '#8b5cf6']
+          colors: ['#a3e635', '#a855f7']
         });
       }
     } catch (err) {
       console.error(err);
-      setError(`Failed to connect to FastAPI endpoint: ${err.message}. Please check if app.py is running locally!`);
+      setError(`[ERR_CONN] FastAPI endpoint offline or unreachable.`);
     } finally {
       setLoading(false);
     }
   };
 
+  const coreFeaturesList = [
+    { key: 'having_IP_Address', label: 'IP_ADDR' },
+    { key: 'URL_Length', label: 'URL_LEN' },
+    { key: 'SSLfinal_State', label: 'SSL_STATE' },
+    { key: 'double_slash_redirecting', label: 'REDIRECTS' },
+    { key: 'age_of_domain', label: 'DOMAIN_AGE' },
+    { key: 'Page_Rank', label: 'REPUTATION' }
+  ];
+
   return (
-    <div style={{ padding: '24px 16px', boxSizing: 'border-box' }}>
-      {/* HEADER HERO SECTION */}
-      <header className="animate-slideup" style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', background: 'rgba(139, 92, 246, 0.15)', padding: '8px 16px', borderRadius: '30px', border: '1px solid rgba(139, 92, 246, 0.3)', marginBottom: '16px' }}>
-          <ShieldCheck size={20} color="#8b5cf6" />
-          <span style={{ fontSize: '14px', fontWeight: '600', letterSpacing: '1px', textTransform: 'uppercase', color: '#c084fc' }}>
-            SentinelNet MLOps Core Platform
-          </span>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      
+      {/* SIDEBAR */}
+      <div style={{ 
+        width: '260px', 
+        borderRight: '1px solid var(--border-color)', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        background: '#0d0d0d',
+        zIndex: 10
+      }}>
+        <div style={{ padding: '24px 20px', borderBottom: '1px solid var(--border-color)' }}>
+          <h2 className="michroma" style={{ color: 'var(--purple-neon)', fontSize: '20px', margin: '0 0 20px 0', letterSpacing: '1px' }}>
+            SENTINEL
+          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid var(--border-color)', padding: '8px', background: 'var(--bg-color)' }}>
+            <div style={{ width: '36px', height: '36px', background: 'var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ShieldCheck size={20} color="var(--green-neon)" />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '11px', fontWeight: '700', color: '#fff' }}>OPERATOR_01</span>
+              <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>[ACCESS_LVL: 05]</span>
+            </div>
+          </div>
         </div>
-        <h1 style={{ fontSize: '42px', fontWeight: '800', margin: '0 0 12px 0', letterSpacing: '-1px', background: 'linear-gradient(to right, #f3f4f6, #8b5cf6, #10b981)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          Real-time Network Phishing Sentinel
-        </h1>
-        <p style={{ color: '#9ca3af', maxWidth: '600px', margin: '0 auto', fontSize: '16px', lineHeight: '1.5' }}>
-          Enterprise machine learning serving architecture utilizing full DVC dataset versioning, Feast offline/online stores, Great Expectations validation, and Evidently AI drift diagnostics.
-        </p>
-      </header>
 
+        <nav style={{ flex: 1, padding: '20px 0' }}>
+          {[
+            { id: 'dashboard', label: 'DASHBOARD', icon: <Activity size={16} /> },
+            { id: 'pipeline', label: 'MLOPS PIPELINE', icon: <Workflow size={16} /> },
+            { id: 'lineage', label: 'DATA LINEAGE', icon: <Network size={16} /> }
+          ].map(item => (
+            <div 
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 24px', cursor: 'pointer',
+                background: activeTab === item.id ? 'rgba(255,255,255,0.05)' : 'transparent',
+                borderLeft: activeTab === item.id ? '3px solid var(--purple-neon)' : '3px solid transparent',
+                color: activeTab === item.id ? '#fff' : 'var(--text-muted)',
+                fontSize: '12px', fontWeight: '700', letterSpacing: '1px', transition: 'all 0.2s'
+              }}
+            >
+              {item.icon}
+              {item.label}
+            </div>
+          ))}
+        </nav>
 
+        <div style={{ padding: '20px', borderTop: '1px solid var(--border-color)' }}>
+          <button style={{ 
+            width: '100%', background: 'var(--purple-neon)', color: '#000', border: 'none', 
+            padding: '12px', fontWeight: '800', fontSize: '12px', letterSpacing: '2px', marginBottom: '20px'
+          }}>
+            INIT_SCAN
+          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '11px', color: 'var(--text-muted)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><Settings size={14} /> SETTINGS</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><LogOut size={14} /> LOGOUT</div>
+          </div>
+        </div>
+      </div>
 
-      {/* MAIN CONTAINER CONTENT */}
-      <main className="animate-slideup" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '20px', backdropFilter: 'blur(16px)', padding: '32px', boxSizing: 'border-box' }}>
+      {/* MAIN CONTENT AREA */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto' }}>
         
-        {/* ==========================================
-            🔮 REAL-TIME PREDICTOR
-            ========================================== */}
-          <div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '24px' }}>
+        {/* HEADER */}
+        <header style={{ borderBottom: '1px solid var(--border-color)', padding: '20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(10,10,10,0.8)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 10 }}>
+          <h1 className="michroma" style={{ margin: 0, color: 'var(--purple-neon)', letterSpacing: '4px', fontStyle: 'italic', fontSize: '24px' }}>
+            SENTINEL_NET // V.01
+          </h1>
+          <div style={{ display: 'flex', gap: '20px', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', alignItems: 'center' }}>
+            <span style={{ cursor: 'pointer', color: '#fff', borderBottom: '2px solid var(--purple-neon)', paddingBottom: '4px' }}>OVERVIEW</span>
+            <span style={{ cursor: 'pointer' }}>EXTRACTOR</span>
+            <span style={{ cursor: 'pointer' }}>MODELS</span>
+            <Search size={16} style={{ marginLeft: '10px', cursor: 'pointer' }} />
+          </div>
+        </header>
+
+        {/* TAB CONTENT */}
+        <div style={{ padding: '30px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          
+          {/* DASHBOARD TAB */}
+          {activeTab === 'dashboard' && (
+            <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start' }}>
               
-              {/* Endpoint Settings */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                <Settings size={20} color="#8b5cf6" />
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '12px', color: '#9ca3af', fontWeight: '600', marginBottom: '4px' }}>
-                    FASTAPI SERVING PREDICTION ENDPOINT
-                  </label>
-                  <input 
-                    type="text" 
-                    value={apiEndpoint} 
-                    onChange={(e) => setApiEndpoint(e.target.value)}
-                    style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#f3f4f6', padding: '6px 12px', fontSize: '14px', width: '100%', boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button 
-                    onClick={() => applyPreset('safe')}
-                    style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '8px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
-                  >
-                    Preset Safe URL
-                  </button>
-                  <button 
-                    onClick={() => applyPreset('phish')}
-                    style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '8px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
-                  >
-                    Preset Phishing
-                  </button>
-                </div>
-              </div>
-
-              {/* REAL-WORLD INTERACTIVE URL PARSER */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(139, 92, 246, 0.04)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-                <label style={{ display: 'block', fontSize: '13px', color: '#c084fc', fontWeight: '700', letterSpacing: '0.5px' }}>
-                  ⚡ TEST ANY REAL-WORLD WEBSITE URL (FEATURE EXTRACTOR)
-                </label>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <input 
-                    type="text" 
-                    value={inputUrl}
-                    onChange={(e) => setInputUrl(e.target.value)}
-                    placeholder="Paste website address here, e.g., http://my-secure-bank-login.com/login.html"
-                    style={{ flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '8px', color: '#f3f4f6', padding: '10px 16px', fontSize: '14px', boxSizing: 'border-box' }}
-                  />
-                  <button 
-                    type="button"
-                    onClick={parseRealUrl}
-                    style={{ background: 'linear-gradient(to right, #8b5cf6, #3b82f6)', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px rgba(139, 92, 246, 0.2)' }}
-                  >
-                    Extract website Features
-                  </button>
-                </div>
-                {parseMessage && (
-                  <div style={{ color: '#10b981', fontSize: '13px', fontWeight: '600', marginTop: '4px' }}>
-                    {parseMessage}
+              {/* LEFT COL: DATA EXTRACT & METADATA */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                
+                {/* SCAN PORTAL */}
+                <div className="panel">
+                  <span className="panel-title">[SCAN_PORTAL // FEAT_EXTRACT]</span>
+                  <form onSubmit={parseRealUrl} style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#050505', border: '1px solid var(--border-color)', padding: '0 15px' }}>
+                      <Network size={16} color="var(--text-muted)" style={{ marginRight: '10px' }} />
+                      <input 
+                        type="text" 
+                        value={inputUrl}
+                        onChange={(e) => setInputUrl(e.target.value)}
+                        placeholder="ENTER_TARGET_URL_FOR_ANALYSIS..."
+                        style={{ background: 'transparent', border: 'none', color: '#fff', width: '100%', padding: '14px 0', fontSize: '13px' }}
+                      />
+                    </div>
+                    <button type="submit" style={{ background: 'var(--purple-neon)', color: '#000', border: 'none', padding: '0 24px', fontWeight: '800', fontSize: '12px', letterSpacing: '1px' }}>
+                      RUN_EXTRACT_SEQUENCE
+                    </button>
+                  </form>
+                  {parseMessage && <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--green-neon)' }}>{parseMessage}</div>}
+                  {error && <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--orange-neon)' }}>{error}</div>}
+                  
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                    <button onClick={() => applyPreset('safe')} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '10px', padding: '4px 8px' }}>[LOAD_SAFE_PRESET]</button>
+                    <button onClick={() => applyPreset('phish')} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '10px', padding: '4px 8px' }}>[LOAD_THREAT_PRESET]</button>
                   </div>
-                )}
-              </div>
+                </div>
 
-
-              {/* Form Grid */}
-              <form onSubmit={handlePredict}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-                  {/* Curated list of most critical features shown by default */}
-                  {Object.keys(DEFAULT_FEATURES)
-                    .filter((key, idx) => showAdvanced || idx < 8)
-                    .map(key => (
-                      <div key={key} style={{ background: 'rgba(0,0,0,0.15)', padding: '16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
-                        <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#f3f4f6', marginBottom: '8px' }}>
-                          {FEATURE_LABELS[key]}
-                        </label>
-                        <select
-                          value={features[key]}
-                          onChange={(e) => updateFeature(key, e.target.value)}
-                          style={{
-                            width: '100%',
-                            background: '#1a1b23',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            color: '#f3f4f6',
-                            padding: '8px',
-                            borderRadius: '6px',
-                            cursor: 'pointer'
-                          }}
+                {/* DATA ARRAY / METADATA LAYER */}
+                <div className="panel">
+                  <span className="panel-title">[DATA_ARRAY // METADATA_LAYER]</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                    {coreFeaturesList.map((feat) => (
+                      <div key={feat.key}>
+                        <label style={{ display: 'block', fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>[FEATURE: {feat.label}]</label>
+                        <select 
+                          value={features[feat.key]} 
+                          onChange={(e) => updateFeature(feat.key, e.target.value)}
+                          style={{ width: '100%', background: '#050505', border: '1px solid var(--border-color)', color: '#fff', padding: '10px', fontSize: '12px', appearance: 'none' }}
                         >
-                          <option value="1">1 (Safe / True)</option>
-                          <option value="0">0 (Neutral / Unknown)</option>
-                          <option value="-1">-1 (Malicious / False)</option>
+                          <option value="1">1_SAFE_VALID</option>
+                          <option value="0">0_NEUTRAL</option>
+                          <option value="-1">-1_MALICIOUS</option>
                         </select>
                       </div>
-                  ))}
+                    ))}
+                  </div>
+
+                  {/* HEARTBEAT */}
+                  <div style={{ marginTop: '30px', borderTop: '1px dashed var(--border-color)', paddingTop: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: 'var(--text-muted)', marginBottom: '10px' }}>
+                      <span>SYSTEM_HEARTBEAT</span>
+                      <span>Uptime: 99.999%</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', height: '40px', gap: '4px' }}>
+                      {[40, 60, 30, 80, 50, 40, 70, 50, 80, 60, 40, 90, 70].map((h, i) => (
+                        <div key={i} style={{ flex: 1, background: 'var(--green-neon)', height: `${h}%`, opacity: 0.8 }}></div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
+              </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-                  <button
-                    type="button"
-                    onClick={() => setShowAdvanced(!showAdvanced)}
-                    style={{ background: 'none', border: 'none', color: '#8b5cf6', fontWeight: '600', fontSize: '14px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    {showAdvanced ? "Show Less Features" : "Configure Advanced Model Features (All 30)"}
-                  </button>
+              {/* RIGHT COL: THREAT EVAL CORE */}
+              <div style={{ width: '380px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className={`panel ${prediction ? (prediction.isPhishing ? 'glow-orange' : 'glow-green') : ''}`} style={{ minHeight: '360px', display: 'flex', flexDirection: 'column' }}>
+                  <span className="panel-title">[THREAT_EVAL_CORE]</span>
+                  
+                  {prediction ? (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <div style={{ fontSize: '10px', color: prediction.isPhishing ? 'var(--orange-neon)' : 'var(--green-neon)', marginBottom: '10px' }}>
+                        {prediction.isPhishing ? '[NODE_MALICIOUS]' : '[NODE_SECURE]'}
+                      </div>
+                      <h2 className={prediction.isPhishing ? 'glow-text-orange' : 'glow-text-green'} style={{ fontSize: '32px', margin: '0 0 30px 0', lineHeight: '1.2', color: prediction.isPhishing ? 'var(--orange-neon)' : 'var(--green-neon)', fontWeight: '800' }}>
+                        STATUS:<br/>
+                        {prediction.isPhishing ? 'CRITICAL_THREAT' : 'SYSTEM_CLEAN'}
+                      </h2>
+                      
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '15px' }}>
+                        <span className={prediction.isPhishing ? 'glow-text-orange' : 'glow-text-green'} style={{ fontSize: '64px', fontWeight: '800', color: prediction.isPhishing ? 'var(--orange-neon)' : 'var(--green-neon)' }}>
+                          {prediction.isPhishing ? '1.00' : '0.00'}
+                        </span>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{prediction.isPhishing ? 'MALWARE_CONFIDENCE' : 'THREAT_SCORE'}</span>
+                      </div>
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    style={{
-                      background: 'linear-gradient(to right, #8b5cf6, #10b981)',
-                      color: '#f3f4f6',
-                      border: 'none',
-                      padding: '14px 32px',
-                      borderRadius: '10px',
-                      fontWeight: '700',
-                      fontSize: '16px',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)',
-                      opacity: loading ? 0.7 : 1
-                    }}
-                  >
-                    <Play size={18} fill="#f3f4f6" />
-                    {loading ? "Analyzing..." : "Evaluate Domain Security"}
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* PREDICTION RESULTS PANEL */}
-            {prediction && (
-              <div 
-                className="animate-slideup" 
-                style={{ 
-                  background: prediction.isPhishing ? 'rgba(239, 68, 68, 0.08)' : 'rgba(16, 185, 129, 0.08)', 
-                  border: prediction.isPhishing ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)', 
-                  borderRadius: '16px', 
-                  padding: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '24px',
-                  boxShadow: prediction.isPhishing ? '0 0 20px rgba(239, 68, 68, 0.1)' : '0 0 20px rgba(16, 185, 129, 0.1)'
-                }}
-              >
-                <div style={{ background: prediction.isPhishing ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)', padding: '16px', borderRadius: '50%' }}>
-                  {prediction.isPhishing ? (
-                    <ShieldAlert size={48} color="#ef4444" />
+                      <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '10px', color: prediction.isPhishing ? 'var(--orange-neon)' : 'var(--green-neon)' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: prediction.isPhishing ? 'var(--orange-neon)' : 'var(--green-neon)', boxShadow: `0 0 8px ${prediction.isPhishing ? 'var(--orange-neon)' : 'var(--green-neon)'}` }}></div>
+                        {prediction.isPhishing ? '⚠️ IMMEDIATE ISOLATION RECOMMENDED' : 'HEARTBEAT_ACTIVE_STABLE'}
+                      </div>
+                    </div>
                   ) : (
-                    <ShieldCheck size={48} color="#10b981" />
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '12px' }}>
+                      [AWAITING_EXECUTION]
+                    </div>
                   )}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'inline-flex', background: prediction.isPhishing ? '#ef4444' : '#10b981', color: '#fff', fontSize: '11px', fontWeight: '800', letterSpacing: '1px', textTransform: 'uppercase', padding: '4px 8px', borderRadius: '4px', marginBottom: '8px' }}>
-                    {prediction.isPhishing ? "PHISHING DETECTED" : "VERIFIED SAFE"}
-                  </div>
-                  <h3 style={{ fontSize: '22px', fontWeight: '800', margin: '0 0 6px 0', color: '#f3f4f6' }}>
-                    {prediction.isPhishing ? "High Risk Cyber Threat Alert!" : "Domain Structure Is Clean"}
-                  </h3>
-                  <p style={{ color: '#9ca3af', fontSize: '14px', lineHeight: '1.4' }}>
-                    {prediction.isPhishing 
-                      ? "The evaluated link profile exhibits anomalies strongly correlated with credential theft pages and DNS record spoofing. Do not supply user input."
-                      : "The evaluated domain parameters are highly verified and aligned with premium, trusted internet certificates. Safe to load."
-                    }
-                  </p>
-                </div>
-                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '12px 20px', borderRadius: '8px', border: '1px solid var(--border-color)', textAlign: 'right' }}>
-                  <span style={{ display: 'block', fontSize: '10px', color: '#9ca3af', fontWeight: '700' }}>MODEL SCORE</span>
-                  <span style={{ fontSize: '24px', fontWeight: '800', fontFamily: 'monospace', color: prediction.isPhishing ? '#ef4444' : '#10b981' }}>
-                    {prediction.isPhishing ? "1.00" : "0.00"}
-                  </span>
-                </div>
+
+                <button 
+                  onClick={handlePredict}
+                  disabled={loading}
+                  style={{ 
+                    width: '100%', background: 'transparent', border: '1px solid var(--border-color)', 
+                    color: 'var(--text-main)', padding: '20px', fontSize: '14px', fontWeight: '700', letterSpacing: '2px'
+                  }}
+                >
+                  {loading ? 'PROCESSING...' : 'EXECUTE_THREAT_EVAL'}
+                </button>
               </div>
-            )}
 
-            {error && (
-              <div 
-                className="animate-slideup" 
-                style={{ 
-                  background: 'rgba(239, 68, 68, 0.05)', 
-                  border: '1px solid rgba(239, 68, 68, 0.2)', 
-                  borderRadius: '12px', 
-                  padding: '16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  color: '#fca5a5',
-                  fontSize: '14px'
-                }}
-              >
-                <AlertTriangle size={20} color="#ef4444" />
-                <span>{error}</span>
+            </div>
+          )}
+
+          {/* PIPELINE TAB */}
+          {activeTab === 'pipeline' && (
+            <div className="panel" style={{ flex: 1 }}>
+              <span className="panel-title">[MLOPS_PIPELINE_ARCHITECTURE]</span>
+              <div style={{ color: 'var(--text-main)', fontSize: '14px', lineHeight: '1.6' }}>
+                <h3 style={{ color: 'var(--purple-neon)' }}>SYSTEM COMPONENTS</h3>
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                  <li style={{ marginBottom: '15px' }}><strong style={{ color: 'var(--green-neon)' }}>[DVC]</strong> Dataset version control active. Syncing remote registries.</li>
+                  <li style={{ marginBottom: '15px' }}><strong style={{ color: 'var(--green-neon)' }}>[GREAT_EXPECTATIONS]</strong> Data quality gates enforcing column schemas.</li>
+                  <li style={{ marginBottom: '15px' }}><strong style={{ color: 'var(--green-neon)' }}>[EVIDENTLY_AI]</strong> Drift tracking running on distribution splits.</li>
+                  <li style={{ marginBottom: '15px' }}><strong style={{ color: 'var(--green-neon)' }}>[FEAST]</strong> Offline parquet feature store connected.</li>
+                </ul>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-      </main>
+          {/* LINEAGE TAB */}
+          {activeTab === 'lineage' && (
+            <div className="panel" style={{ flex: 1 }}>
+              <span className="panel-title">[DATA_LINEAGE_GRAPH]</span>
+              <div style={{ color: 'var(--text-main)', fontSize: '14px', lineHeight: '1.6' }}>
+                 <h3 style={{ color: 'var(--purple-neon)' }}>OPENLINEAGE // MARQUEZ REGISTRY</h3>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '30px' }}>
+                    <div style={{ border: '1px solid var(--border-color)', padding: '20px', textAlign: 'center' }}>[JOB_01_INGEST]</div>
+                    <div style={{ color: 'var(--purple-neon)' }}>➔</div>
+                    <div style={{ border: '1px solid var(--border-color)', padding: '20px', textAlign: 'center' }}>[JOB_02_VALIDATE]</div>
+                    <div style={{ color: 'var(--purple-neon)' }}>➔</div>
+                    <div style={{ border: '1px solid var(--border-color)', padding: '20px', textAlign: 'center' }}>[JOB_03_TRAIN]</div>
+                 </div>
+                 <p style={{ marginTop: '40px', color: 'var(--text-muted)', fontSize: '12px' }}>[SYS_LOG] Tracked events pushed to Marquez backend.</p>
+              </div>
+            </div>
+          )}
 
-      {/* FOOTER */}
-      <footer style={{ textAlign: 'center', marginTop: '48px', paddingBottom: '24px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '24px' }}>
-        <p style={{ color: '#4b5563', fontSize: '13px' }}>
-          SentinelNet Network Security Pipeline &copy; 2026. Built with Vite, ReactJS, FastAPI, and Scikit-Learn.
-        </p>
-      </footer>
+        </div>
+
+        {/* FOOTER */}
+        <footer style={{ background: '#050505', borderTop: '1px solid var(--border-color)', padding: '8px 30px', fontSize: '9px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
+          <span>LATENCY: 12ms &nbsp;&nbsp; REGION: US-EAST-01 &nbsp;&nbsp; <span style={{ color: 'var(--green-neon)' }}>ENCRYPTION: AES-256-GCM</span></span>
+          <span>V_0.1.4_STABLE // SENTINEL_ML_CORE</span>
+        </footer>
+
+      </div>
     </div>
   );
 }
