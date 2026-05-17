@@ -17,12 +17,12 @@ graph TD
 
 The training pipeline runs automatically in 6 modular stages:
 
-- **01 / Data Ingestion** (`data_ingestion.py`): Connects to MongoDB, extracts threat records, and exports training and testing data splits.
-- **02 / Data Validation** (`data_validation.py`): Performs column schema validations with Great Expectations and checks for dataset drift using Evidently AI.
-- **03 / Data Transformation** (`data_transformation.py`): Standardizes and cleans threat metrics using a scikit-learn pipeline with KNNImputer.
-- **04 / Model Trainer** (`model_trainer.py`): Automatically trains and evaluates 5 different classifier ensembles (Random Forest, Decision Tree, Gradient Boosting, Logistic Regression, AdaBoost) to select the best predictor.
-- **05 / Model Registry** (`mlflow`): Logs model metrics and parameters, then registers the best-performing model to the MLflow repository.
-- **06 / Deployment** (`k8s` / `ArgoCD`): Sets up declarative GitOps configurations to manage containerized replicas on a Kubernetes cluster via ArgoCD.
+1. **Data Ingestion** (`data_ingestion.py`): Connects to MongoDB, extracts threat records, and exports training and testing data splits.
+2. **Data Validation** (`data_validation.py`): Performs column schema validations with Great Expectations and checks for dataset drift using Evidently AI.
+3. **Data Transformation** (`data_transformation.py`): Standardizes and cleans threat metrics using a scikit-learn pipeline with KNNImputer.
+4. **Model Trainer** (`model_trainer.py`): Automatically trains and evaluates 5 different classifier ensembles (Random Forest, Decision Tree, Gradient Boosting, Logistic Regression, AdaBoost) to select the best predictor.
+5. **Model Registry** (`mlflow`): Logs model metrics and parameters, then registers the best-performing model to the MLflow repository.
+6. **Deployment** (`k8s` / `ArgoCD`): Sets up declarative GitOps configurations to manage containerized replicas on a Kubernetes cluster via ArgoCD.
 
 ---
 
