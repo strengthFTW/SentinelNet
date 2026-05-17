@@ -28,12 +28,26 @@ class DataValidation:
         
     def validate_number_of_columns(self,dataframe:pd.DataFrame)->bool:
         try:
+            import great_expectations as ge
+            logging.info("Initializing Great Expectations for dataset quality validation...")
+            
+            # Wrap standard pandas dataframe in Great Expectations dataset
+            ge_dataset = ge.from_pandas(dataframe)
             number_of_columns=len(self._schema_config["columns"])
-            logging.info(f"Required number of columns:{number_of_columns}")
-            logging.info(f"Data frame has columns:{len(dataframe.columns)}")
-            if len(dataframe.columns)==number_of_columns:
+            
+            logging.info(f"Required number of columns: {number_of_columns}")
+            logging.info(f"Data frame has columns: {len(dataframe.columns)}")
+            
+            # Assert column count expectation
+            validation_result = ge_dataset.expect_table_column_count_to_equal(value=number_of_columns)
+            
+            success = validation_result["success"]
+            if success:
+                logging.info("Great Expectations column count validation succeeded!")
                 return True
-            return False
+            else:
+                logging.error("Great Expectations column count validation failed!")
+                return False
         except Exception as e:
             raise NetworkSecurityException(e,sys)
         
