@@ -43,6 +43,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Instrument FastAPI with Prometheus exporter
+from prometheus_fastapi_instrumentator import Instrumentator
+Instrumentator().instrument(app).expose(app)
+
 from fastapi.templating import Jinja2Templates
 templates = Jinja2Templates(directory="./templates")
 
@@ -60,27 +64,37 @@ async def train_route():
         raise NetworkSecurityException(e,sys)
     
 @app.post("/predict")
-async def predict_route(request: Request,file: UploadFile = File(...)):
+async def predict_route(request: Request):
     try:
-        df=pd.read_csv(file.file)
-        #print(df)
-        preprocesor=load_object("final_model/preprocessor.pkl")
-        final_model=load_object("final_model/model.pkl")
-        network_model = NetworkModel(preprocessor=preprocesor,model=final_model)
-        print(df.iloc[0])
-        y_pred = network_model.predict(df)
-        print(y_pred)
-        df['predicted_column'] = y_pred
-        print(df['predicted_column'])
-        #df['predicted_column'].replace(-1, 0)
-        #return df.to_json()
-        df.to_csv('prediction_output/output.csv')
-        table_html = df.to_html(classes='table table-striped')
-        #print(table_html)
-        return templates.TemplateResponse("table.html", {"request": request, "table": table_html})
+        content_type = request.headers.get("content-type", "")
         
+        # 1. Handle JSON Payloads (React Frontend)
+        if "application/json" in content_type:
+            data = await request.json()
+            df = pd.DataFrame([data])
+            preprocessor = load_object("final_model/preprocessor.pkl")
+            final_model = load_object("final_model/model.pkl")
+            network_model = NetworkModel(preprocessor=preprocessor, model=final_model)
+            y_pred = network_model.predict(df)
+            return {"prediction": [int(y_pred[0])]}
+            
+        # 2. Handle File Uploads (Course templates)
+        form = await request.form()
+        file = form.get("file")
+        if file is not None:
+            df = pd.read_csv(file.file)
+            preprocessor = load_object("final_model/preprocessor.pkl")
+            final_model = load_object("final_model/model.pkl")
+            network_model = NetworkModel(preprocessor=preprocessor, model=final_model)
+            y_pred = network_model.predict(df)
+            df['predicted_column'] = y_pred
+            df.to_csv('prediction_output/output.csv')
+            table_html = df.to_html(classes='table table-striped')
+            return templates.TemplateResponse("table.html", {"request": request, "table": table_html})
+            
+        return {"error": "Invalid request format. Send application/json or multipart/form-data with file."}
     except Exception as e:
-            raise NetworkSecurityException(e,sys)
+        raise NetworkSecurityException(e,sys)
 
     
 if __name__=="__main__":
