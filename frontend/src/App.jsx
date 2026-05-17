@@ -239,7 +239,8 @@ function App() {
       // Assume output is standard { 'prediction': [0] } or { 'result': 1 } or similar based on backend model trainer
       // SentinelNet prediction output value: 1 = Phishing, 0 or -1 = Safe
       const val = data.prediction !== undefined ? data.prediction[0] : data.result;
-      const isPhishing = val === 1;
+      const isPhishing = val === -1;
+
 
       setPrediction({
         isPhishing,
