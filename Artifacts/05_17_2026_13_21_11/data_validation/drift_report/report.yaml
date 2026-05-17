@@ -1,0 +1,93 @@
+Abnormal_URL:
+  drift_status: false
+  p_value: 0.9956127615648805
+DNSRecord:
+  drift_status: false
+  p_value: 1.0
+Domain_registeration_length:
+  drift_status: false
+  p_value: 0.998748262135962
+Favicon:
+  drift_status: false
+  p_value: 0.999980543412802
+Google_Index:
+  drift_status: false
+  p_value: 0.9999745994767623
+HTTPS_token:
+  drift_status: false
+  p_value: 0.999991733805822
+Iframe:
+  drift_status: false
+  p_value: 1.0
+Links_in_tags:
+  drift_status: false
+  p_value: 0.7242595407673548
+Links_pointing_to_page:
+  drift_status: false
+  p_value: 0.9985585060006266
+Page_Rank:
+  drift_status: false
+  p_value: 0.9999148748234266
+Prefix_Suffix:
+  drift_status: false
+  p_value: 0.9999994872658009
+Redirect:
+  drift_status: false
+  p_value: 0.9076793411970308
+Request_URL:
+  drift_status: false
+  p_value: 0.9990674182373884
+Result:
+  drift_status: false
+  p_value: 1.0
+RightClick:
+  drift_status: false
+  p_value: 0.9999939100687764
+SFH:
+  drift_status: false
+  p_value: 0.13369774887827723
+SSLfinal_State:
+  drift_status: false
+  p_value: 1.0
+Shortining_Service:
+  drift_status: false
+  p_value: 0.9076793411970326
+Statistical_report:
+  drift_status: false
+  p_value: 0.583261718071284
+Submitting_to_email:
+  drift_status: false
+  p_value: 1.0
+URL_Length:
+  drift_status: false
+  p_value: 0.9998388206083407
+URL_of_Anchor:
+  drift_status: false
+  p_value: 1.0
+age_of_domain:
+  drift_status: false
+  p_value: 0.8669375646400233
+double_slash_redirecting:
+  drift_status: false
+  p_value: 0.9987482621359622
+having_At_Symbol:
+  drift_status: false
+  p_value: 1.0
+having_IP_Address:
+  drift_status: false
+  p_value: 0.15833931568180637
+having_Sub_Domain:
+  drift_status: false
+  p_value: 0.9863226193637479
+on_mouseover:
+  drift_status: false
+  p_value: 1.0
+popUpWidnow:
+  drift_status: false
+  p_value: 0.8098241126858339
+port:
+  drift_status: false
+  p_value: 0.9999578103694244
+web_traffic:
+  drift_status: false
+  p_value: 0.6793256569216634

@@ -1,0 +1,93 @@
+Abnormal_URL:
+  drift_status: false
+  p_value: 0.999999999999748
+DNSRecord:
+  drift_status: false
+  p_value: 0.9995088059095283
+Domain_registeration_length:
+  drift_status: false
+  p_value: 0.9999999999999148
+Favicon:
+  drift_status: false
+  p_value: 0.9999321298038519
+Google_Index:
+  drift_status: false
+  p_value: 0.7892281718832967
+HTTPS_token:
+  drift_status: false
+  p_value: 0.9884283678259363
+Iframe:
+  drift_status: false
+  p_value: 1.0
+Links_in_tags:
+  drift_status: false
+  p_value: 0.8393562351530384
+Links_pointing_to_page:
+  drift_status: false
+  p_value: 0.9996536937360632
+Page_Rank:
+  drift_status: false
+  p_value: 0.8669375646400233
+Prefix_Suffix:
+  drift_status: false
+  p_value: 0.9999994872658009
+Redirect:
+  drift_status: false
+  p_value: 1.0
+Request_URL:
+  drift_status: false
+  p_value: 0.9999462839353719
+Result:
+  drift_status: false
+  p_value: 0.10350607611936213
+RightClick:
+  drift_status: false
+  p_value: 1.0
+SFH:
+  drift_status: false
+  p_value: 0.7786981711104273
+SSLfinal_State:
+  drift_status: false
+  p_value: 0.1732359582305526
+Shortining_Service:
+  drift_status: false
+  p_value: 0.9985585060006267
+Statistical_report:
+  drift_status: false
+  p_value: 1.0
+Submitting_to_email:
+  drift_status: false
+  p_value: 0.9999999999999999
+URL_Length:
+  drift_status: false
+  p_value: 0.9851734872154114
+URL_of_Anchor:
+  drift_status: false
+  p_value: 0.2981786854590901
+age_of_domain:
+  drift_status: false
+  p_value: 0.9751784512217775
+double_slash_redirecting:
+  drift_status: false
+  p_value: 0.9999997772661215
+having_At_Symbol:
+  drift_status: false
+  p_value: 1.0
+having_IP_Address:
+  drift_status: false
+  p_value: 0.9999578103694244
+having_Sub_Domain:
+  drift_status: false
+  p_value: 0.15595891615503943
+on_mouseover:
+  drift_status: false
+  p_value: 1.0
+popUpWidnow:
+  drift_status: false
+  p_value: 1.0
+port:
+  drift_status: false
+  p_value: 1.0
+web_traffic:
+  drift_status: false
+  p_value: 0.459905458157691
