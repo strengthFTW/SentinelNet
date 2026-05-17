@@ -11,4 +11,7 @@ mlflow
 dagshub
 fastapi
 uvicorn
+prometheus-fastapi-instrumentator
+jinja2
+python-multipart
 ##-e .
