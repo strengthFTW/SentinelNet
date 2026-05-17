@@ -285,7 +285,12 @@ function App() {
                 <div style={{ color: 'var(--text-main)', fontSize: '11px', letterSpacing: '2px', marginBottom: '20px', fontWeight: '700' }}>[ ML_FEATURE_PARAMETERS ]</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
                   {coreFeaturesList.map((feat) => (
-                    <div key={feat.key} style={{ border: '1px solid var(--border-color)', padding: '20px', background: 'rgba(255,255,255,0.02)' }}>
+                    <div key={feat.key} style={{ border: '1px solid var(--border-color)', padding: '20px', background: 'rgba(255,255,255,0.02)', position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', gap: '3px' }}>
+                         <div style={{ width: '8px', height: '3px', background: '#4ade80' }}></div>
+                         <div style={{ width: '8px', height: '3px', background: '#d1d5db' }}></div>
+                         <div style={{ width: '8px', height: '3px', background: '#78350f' }}></div>
+                      </div>
                       <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px' }}>{feat.label}</label>
                       <select 
                         value={features[feat.key]} 
@@ -310,8 +315,9 @@ function App() {
                     onClick={handlePredict}
                     disabled={loading}
                     style={{ 
-                      background: '#d8b4fe', color: '#000', border: 'none', 
-                      padding: '20px 0', width: '60%', fontSize: '20px', fontWeight: '800', 
+                      background: '#d8b4fe', color: '#4c1d95', border: 'none',
+                      borderBottom: '4px solid #a855f7', 
+                      padding: '24px 0', width: '60%', fontSize: '24px', fontWeight: '800', 
                       display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px',
                       opacity: loading ? 0.7 : 1
                     }}
@@ -336,7 +342,11 @@ function App() {
                   ) : (
                     <>
                       <Network size={48} color="var(--border-color)" style={{ marginBottom: '20px' }} />
-                      <div style={{ color: 'var(--text-muted)', fontSize: '12px', letterSpacing: '2px' }}>DYNAMIC RESULTS PLACEHOLDER</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '12px', letterSpacing: '2px', marginBottom: '20px' }}>DYNAMIC RESULTS PLACEHOLDER</div>
+                      <div style={{ display: 'flex', gap: '15px' }}>
+                        <div style={{ border: '1px solid var(--border-color)', padding: '6px 12px', fontSize: '9px', color: 'var(--border-color)' }}>SYSTEM_CLEAN/0.00</div>
+                        <div style={{ border: '1px solid var(--border-color)', padding: '6px 12px', fontSize: '9px', color: 'var(--border-color)' }}>CRITICAL_THREAT/1.00</div>
+                      </div>
                     </>
                   )}
                 </div>
