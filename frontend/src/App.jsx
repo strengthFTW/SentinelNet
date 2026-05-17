@@ -93,7 +93,6 @@ function App() {
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('predict');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [apiEndpoint, setApiEndpoint] = useState('http://localhost:8000/predict');
   
@@ -283,44 +282,14 @@ function App() {
         </p>
       </header>
 
-      {/* NAVIGATION TABS */}
-      <div className="animate-slideup" style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '32px' }}>
-        {[
-          { id: 'predict', label: 'Real-time Detector', icon: <Cpu size={18} /> },
-          { id: 'pipeline', label: 'MLOps Pipeline Specs', icon: <Workflow size={18} /> },
-          { id: 'lineage', label: 'Data Lineage Graph', icon: <Network size={18} /> }
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px 24px',
-              borderRadius: '12px',
-              border: activeTab === tab.id ? '1px solid #8b5cf6' : '1px solid rgba(255,255,255,0.08)',
-              background: activeTab === tab.id ? 'rgba(139, 92, 246, 0.15)' : 'rgba(22, 24, 35, 0.4)',
-              color: activeTab === tab.id ? '#f3f4f6' : '#9ca3af',
-              fontSize: '15px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-            }}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
-      </div>
+
 
       {/* MAIN CONTAINER CONTENT */}
       <main className="animate-slideup" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '20px', backdropFilter: 'blur(16px)', padding: '32px', boxSizing: 'border-box' }}>
         
         {/* ==========================================
-            🔮 TAB 1: REAL-TIME PREDICTOR
+            🔮 REAL-TIME PREDICTOR
             ========================================== */}
-        {activeTab === 'predict' && (
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '24px' }}>
               
@@ -515,154 +484,6 @@ function App() {
               </div>
             )}
           </div>
-        )}
-
-        {/* ==========================================
-            📊 TAB 2: MLOPS PIPELINE SPECS
-            ========================================== */}
-        {activeTab === 'pipeline' && (
-          <div>
-            <h3 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 8px 0', color: '#f3f4f6' }}>
-              SentinelNet Production Architecture
-            </h3>
-            <p style={{ color: '#9ca3af', fontSize: '15px', marginBottom: '32px' }}>
-              Complete breakdown of core enterprise tooling integration mapping offline feature store, real-time validations, and drift report metrics.
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-              {/* DVC Card */}
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', textAlign: 'left' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between', gap: '12px', marginBottom: '16px' }}>
-                  <div style={{ background: 'rgba(139, 92, 246, 0.15)', padding: '10px', borderRadius: '10px' }}>
-                    <GitBranch size={20} color="#8b5cf6" />
-                  </div>
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', padding: '4px 8px', borderRadius: '4px', marginLeft: 'auto' }}>DVC ACTIVE</span>
-                </div>
-                <h4 style={{ fontSize: '18px', fontWeight: '700', margin: '0 0 8px 0', color: '#f3f4f6' }}>Dataset Versioning</h4>
-                <p style={{ color: '#9ca3af', fontSize: '13px', lineHeight: '1.4' }}>
-                  Raw network phishing tables version controlled under DVC `.dvc` registries, isolating heavy datasets from Git history.
-                </p>
-              </div>
-
-              {/* Great Expectations Card */}
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', textAlign: 'left' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between', gap: '12px', marginBottom: '16px' }}>
-                  <div style={{ background: 'rgba(16, 185, 129, 0.15)', padding: '10px', borderRadius: '10px' }}>
-                    <CheckCircle2 size={20} color="#10b981" />
-                  </div>
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '4px 8px', borderRadius: '4px', marginLeft: 'auto' }}>GE ACTIVE</span>
-                </div>
-                <h4 style={{ fontSize: '18px', fontWeight: '700', margin: '0 0 8px 0', color: '#f3f4f6' }}>Data Quality Assertions</h4>
-                <p style={{ color: '#9ca3af', fontSize: '13px', lineHeight: '1.4' }}>
-                  Programmatic expect_table_column_count_to_equal testing inside pipeline, blocking execution on schema violations.
-                </p>
-              </div>
-
-              {/* Evidently AI Card */}
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', textAlign: 'left' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between', gap: '12px', marginBottom: '16px' }}>
-                  <div style={{ background: 'rgba(59, 130, 246, 0.15)', padding: '10px', borderRadius: '10px' }}>
-                    <Activity size={20} color="#3b82f6" />
-                  </div>
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', padding: '4px 8px', borderRadius: '4px', marginLeft: 'auto' }}>EVIDENTLY ACTIVE</span>
-                </div>
-                <h4 style={{ fontSize: '18px', fontWeight: '700', margin: '0 0 8px 0', color: '#f3f4f6' }}>Data Drift Dashboard</h4>
-                <p style={{ color: '#9ca3af', fontSize: '13px', lineHeight: '1.4' }}>
-                  Calculates Chi-Square drift distributions across split sets, writing an interactive html diagnostics report containing charts.
-                </p>
-              </div>
-
-              {/* Feast Card */}
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', textAlign: 'left' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between', gap: '12px', marginBottom: '16px' }}>
-                  <div style={{ background: 'rgba(245, 158, 11, 0.15)', padding: '10px', borderRadius: '10px' }}>
-                    <Database size={20} color="#f59e0b" />
-                  </div>
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', padding: '4px 8px', borderRadius: '4px', marginLeft: 'auto' }}>FEAST ACTIVE</span>
-                </div>
-                <h4 style={{ fontSize: '18px', fontWeight: '700', margin: '0 0 8px 0', color: '#f3f4f6' }}>Feature Registry Store</h4>
-                <p style={{ color: '#9ca3af', fontSize: '13px', lineHeight: '1.4' }}>
-                  Offline Parquet store and SQLite online database mapping for serving historical training features and online real-time metrics.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ==========================================
-            🕸️ TAB 3: DATA LINEAGE
-            ========================================== */}
-        {activeTab === 'lineage' && (
-          <div>
-            <h3 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 8px 0', color: '#f3f4f6' }}>
-              Data Pipeline & Job Lineage Map
-            </h3>
-            <p style={{ color: '#9ca3af', fontSize: '15px', marginBottom: '40px' }}>
-              OpenLineage event map tracked directly to your local Marquez registry on every pipeline execution run.
-            </p>
-
-            {/* Visual Node Diagram */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '20px 0' }}>
-              
-              {/* Node 1: Ingestion */}
-              <div style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '12px', padding: '20px', width: '220px', textAlign: 'left' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <FileSpreadsheet size={16} color="#c084fc" />
-                  <span style={{ fontSize: '12px', fontWeight: '700', color: '#c084fc', letterSpacing: '0.5px' }}>JOB RUN 01</span>
-                </div>
-                <h5 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 4px 0', color: '#f3f4f6' }}>Data Ingestion</h5>
-                <p style={{ color: '#9ca3af', fontSize: '12px', margin: '0 0 8px 0' }}>Reads: phisingData.csv</p>
-                <div style={{ display: 'inline-flex', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>
-                  Outputs Ingest Splits
-                </div>
-              </div>
-
-              {/* Arrow */}
-              <div style={{ fontSize: '24px', color: '#4b5563' }}>➔</div>
-
-              {/* Node 2: Validation */}
-              <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '12px', padding: '20px', width: '220px', textAlign: 'left' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <Layers size={16} color="#34d399" />
-                  <span style={{ fontSize: '12px', fontWeight: '700', color: '#34d399', letterSpacing: '0.5px' }}>JOB RUN 02</span>
-                </div>
-                <h5 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 4px 0', color: '#f3f4f6' }}>Data Validation</h5>
-                <p style={{ color: '#9ca3af', fontSize: '12px', margin: '0 0 8px 0' }}>Runs Great Expectations</p>
-                <div style={{ display: 'inline-flex', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>
-                  Outputs Drift Report
-                </div>
-              </div>
-
-              {/* Arrow */}
-              <div style={{ fontSize: '24px', color: '#4b5563' }}>➔</div>
-
-              {/* Node 3: Model Training */}
-              <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '12px', padding: '20px', width: '220px', textAlign: 'left' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <Cpu size={16} color="#60a5fa" />
-                  <span style={{ fontSize: '12px', fontWeight: '700', color: '#60a5fa', letterSpacing: '0.5px' }}>JOB RUN 03</span>
-                </div>
-                <h5 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 4px 0', color: '#f3f4f6' }}>Model Training</h5>
-                <p style={{ color: '#9ca3af', fontSize: '12px', margin: '0 0 8px 0' }}>Performs GridSearch</p>
-                <div style={{ display: 'inline-flex', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>
-                  Logs Model to MLflow
-                </div>
-              </div>
-
-            </div>
-
-            <div style={{ marginTop: '32px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '20px', maxWidth: '600px', margin: '32px auto 0 auto', textAlign: 'left' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                <Terminal size={18} color="#8b5cf6" />
-                <span style={{ fontWeight: '700', color: '#f3f4f6', fontSize: '14px' }}>Marquez UI Integration</span>
-              </div>
-              <p style={{ color: '#9ca3af', fontSize: '13px', lineHeight: '1.4' }}>
-                You can review this entire dataset-dependency schema map graphically by launching your Marquez server container and visiting the lineage portal on port `3000`.
-              </p>
-            </div>
-
-          </div>
-        )}
 
       </main>
 
