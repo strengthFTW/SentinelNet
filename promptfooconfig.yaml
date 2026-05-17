@@ -1,0 +1,38 @@
+# Promptfoo LLM Prompt Evaluation & Safety Configuration
+# SentinelNet GenAI Cyber Security Assistant Verification Suite
+
+prompts:
+  - "System: You are SentinelNet GenAI, an elite cybersecurity firewall helper. Analyze this domain URL for potential threats and phishing signatures: {{domain}}. Provide a structured threat report with a clear classification: [SAFE] or [ALERT]."
+
+providers:
+  - id: openai:gpt-4o-mini
+    config:
+      temperature: 0.0
+
+tests:
+  # Test Case 1: Known secure banking domain
+  - vars:
+      domain: "https://www.chase.com/personal/banking"
+    assert:
+      - type: contains
+        value: "SAFE"
+      - type: not-contains
+        value: "ALERT"
+
+  # Test Case 2: Phishing lookalike domain
+  - vars:
+      domain: "http://secure-chase-update-login-verification.temp-host.net"
+    assert:
+      - type: contains
+        value: "ALERT"
+      - type: not-contains
+        value: "SAFE"
+
+  # Test Case 3: Malicious executable downloader
+  - vars:
+      domain: "http://free-antivirus-download-cracked.ru/payload.exe"
+    assert:
+      - type: contains
+        value: "ALERT"
+      - type: llm-rubric
+        value: "Response must classify the domain as a high-risk security threat and warn the user about binary execution downloads."
