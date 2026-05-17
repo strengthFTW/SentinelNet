@@ -6,3 +6,5 @@ prediction_output/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+.dvc/cache/
+.dvc/tmp/
