@@ -6,6 +6,15 @@ SentinelNet is an end-to-end machine learning operations (MLOps) platform built 
 
 ## MLOps Pipeline Flow
 
+```mermaid
+graph TD
+    A[01 / DATA_INGESTION MongoDB] --> B[02 / GE & EVIDENTLY_AI Validation]
+    B --> C[03 / DATA_TRANSFORMATION KNN Imputer]
+    C --> D[04 / MODEL_TRAINER Ensembles Search]
+    D --> E[05 / DAGSHUB_MLFLOW Registry]
+    E --> F[06 / KUBERNETES ArgoCD GitOps]
+```
+
 The training pipeline runs automatically in 6 modular stages:
 
 1. **01 / Data Ingestion** (`data_ingestion.py`): Connects to MongoDB, extracts threat records, and exports training and testing data splits.
