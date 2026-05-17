@@ -65,3 +65,24 @@ npm run dev
 
 Open your browser and navigate to:
 http://localhost:5173/
+
+---
+
+## MLOps Technology Stack and Integrated Tools
+
+The SentinelNet platform implements the following tools and technologies as part of its end-to-end MLOps toolchain:
+
+* **Source Code Control & CI**: GitHub and GitHub Actions for continuous integration and automated testing.
+* **Model Serving API**: FastAPI for high-performance prediction and training endpoints.
+* **Experiment Tracking & Model Registry**: MLflow integrated with DagsHub for parameter, metric logging, and centralized model registry.
+* **Containerization**: Docker for packaging high-performance runtime microservice images.
+* **Data Quality**: Great Expectations for mathematical column schema and data quality assertions.
+* **Feature Management**: Feast Feature Store for local feature schema serving.
+* **Data Versioning**: Data Version Control (DVC) for tracking threat datasets without cluttering Git.
+* **Data Lineage**: OpenLineage and Marquez for tracking ingestion and transformation lineage graphs.
+* **Orchestration**: Kubernetes for container replica scaling and routing.
+* **Continuous Deployment**: ArgoCD for declarative GitOps continuous deployment.
+* **Interactive Frontend**: ReactJS for the clean dark-mode telemetry client.
+* **Drift Monitoring**: Evidently AI for automated dataset drift analysis and reporting.
+* **Infrastructure Telemetry**: Prometheus and Grafana for backend exporter metrics and traffic dashboarding.
+* **Prompt Management**: Promptfoo for evaluating prompt templates of threat reports.
